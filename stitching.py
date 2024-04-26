@@ -1,4 +1,5 @@
-'''mosaic geocoding tiles to one raster and merge overlappling with maximum'''
+'''stitch geocoding tiles to one raster data based on geographical coordinates;
+    merge overlappling with maximum value'''
 from osgeo import gdal
 import os
 import glob
@@ -21,8 +22,8 @@ def get_spatialcoords(ds):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='detect sea bottom with gradient-mean-abnormal_detection-smooth')
-    parser.add_argument('--root', default='D:/SidescanData_202308/number2/', help='root')
+    parser = argparse.ArgumentParser(description='Stitch tile mosaics based on geographical coordinates')
+    parser.add_argument('--root', default='./outputs/', help='root')
     parser.add_argument('--out_file_name', default='mosaic', help='file for output mosaic')
     
     args = parser.parse_args()
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     start =time.time()
 
     input_names = []
-    for input_path in sorted(glob.glob(os.path.join(root,'tile','geocoding', '*21-bs-geocoding.tif'))):
+    for input_path in sorted(glob.glob(os.path.join(root,'tile','geocoding', '*20-bs-geocoding.tif'))):
         _, input_name = os.path.split(input_path)
         input_names.append(input_name)
 

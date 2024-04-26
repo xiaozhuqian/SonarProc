@@ -1,4 +1,22 @@
 if __name__ == '__main__':
+    '''
+    Preprocessing waterfall images, including bottom detection, slant correction, gray enhancement, speed correction, and mosaicing/geocoding.
+    Inputs:
+        downsampled backscatter data: *_frequency-bs.npy;
+        survey line geographical coordinates: *_frequency-geo_coords.npy
+        vessel speed (optional): *_frequency-nmeas.npy 
+        vessel course (optional): *_frequency-nmeas.npy
+        towfish heading (optional): *_frequency-attitudes.npy
+    Outputs:
+        Final outputs:
+            corrected waterfall images: *_20-bs-speed_correction.png
+            tile mosaics: *_20-bs-geocoding.png
+            QC reports: *_20-bs-quality_control.pdf
+            processing log: *.log
+        intermediate outputs:
+            bottom cooridinates, slant corrected images, gray enhanced images, etc.
+    '''
+
     import argparse
     import os
     import glob
@@ -22,22 +40,24 @@ if __name__ == '__main__':
     from QC.qc_vis import QualityControl,gen_pdf
     
 
-    parser = argparse.ArgumentParser(description='detect sea bottom with gradient-mean-abnormal_detection-smooth')
-    parser.add_argument('--input_dir', default='D:/SidescanData_202312/sanshan_80/npy/', help='directory of input file')
-    parser.add_argument('--out_dir', default='./data/outputs5/12_sanshan_20', help='dierctory to save output')
+    parser = argparse.ArgumentParser(description='Waterfall preprocessing and mosaicing')
+    parser.add_argument('--input_dir', default='./outputs/npy/', help='directory of input file')
+    parser.add_argument('--out_dir', default='./outputs/tile', help='dierctory to save output')
     
-    parser.add_argument('--frequency', default=20, type=int, help='20: low frequency; 21: high frequency')
+    parser.add_argument('--frequency', default=20, type=int, help='frequency code, high frequency (1600 kHz)=21, low frequency (600 kHz) = 20')
     parser.add_argument('--slant_range', default=80., type=float, help='slant_range')
 
     parser.add_argument('--planed_speed', default=4., type=float, help='vessel speed (knots)')
-    parser.add_argument('--recorded_speed', default=1, type=int, help='0: do not having recorded_speed, 1: having recorded_speed')
+    parser.add_argument('--recorded_speed', default=1, type=int, help='0: do not have recorded_speed, 1: have recorded_speed')
 
-    parser.add_argument('--temperature', default=26., type=float, help='slant_range')
-    parser.add_argument('--salinity', default=28., type=float, help='slant_range')
-    parser.add_argument('--depth', default=5., type=float, help='slant_range')
-    parser.add_argument('--pH', default=8., type=float, help='slant_range')
+    # tvg parameters
+    parser.add_argument('--temperature', default=26., type=float, help='sea water temperature')
+    parser.add_argument('--salinity', default=28., type=float, help='sea water salinity')
+    parser.add_argument('--depth', default=5., type=float, help='towfish depth')
+    parser.add_argument('--pH', default=8., type=float, help='sea water pH')
     parser.add_argument('--lambd', default=20., type=float, help='tvg log coefficient')
     
+    # bottom detection parameters
     parser.add_argument('--gradient_thred_factor', default=0.1, type=float, help='coefficient of maximum gradient')
     parser.add_argument('--win_h', default=10, type=int, help='abnormal detection window height/2')
     
@@ -45,8 +65,10 @@ if __name__ == '__main__':
     parser.add_argument('--peak_factor', default=0.7, type=float, help='coefficient of peak detection') # work when use_ab_line_correction=1
     parser.add_argument('--valley_std', default=5, type=int, help='valley detection standard deviation')# work when use_ab_line_correction=1
 
-    parser.add_argument('--bottom_offset', default=[2,5], type=int, help='bottom coord offset of starboard, positive is plus')
+    # slant correction parameters
+    parser.add_argument('--bottom_offset', default=[2,5], type=int, help='bottom coordinates offsets of port and starboard, positive is plus')
 
+    # gray enhancement parameters
     parser.add_argument('--gray_enhance_method', default='coarse2fine', help='retinex, statistic, coarse2fine')
     parser.add_argument('--gaussian_kernel', default=50, type=int, help='gaussian filter kernel') # for retinex gray enhancement
     parser.add_argument('--gain', default=10., type=float, help='multiplication factor') # for retinex gray enhancement
@@ -54,12 +76,14 @@ if __name__ == '__main__':
     parser.add_argument('--ratio', default=0.02, type=float, help='gray linear strech clip ratio') # for coarse2fine gray enhancement
     parser.add_argument('--prob_thred', default=0.3, type=float, help='no object pings detect probability threshold') # for coarse2fine gray enhancement, smaller, easier including objects
 
+    # speed correction parameters
     parser.add_argument('--speed_correction_method', default='blockwise', help='blockwise, overall')
 
+    # geocoding parameters
     parser.add_argument('--geo_EPSG', default=4490, type=int, help='geographic coordinate system')
-    parser.add_argument('--proj_EPSG', default=4498, type=int, help='projection coordinate system')
+    parser.add_argument('--proj_EPSG', default=4499, type=int, help='projection coordinate system')
     parser.add_argument('--geocoding_img_res', default=0.1, type=float, help='geocoded image resolution')
-    parser.add_argument('--is_ns', default=1, type=int, help='survey line direction, for fill; 1 when north-west direction, 0 when east-west direction')
+    parser.add_argument('--is_ns', default=1, type=int, help='survey line direction, for fill: 1 when north-west direction, 0 when east-west direction')
     parser.add_argument('--fish_trajectory_smooth_type', default='bspline', type=str, help='smooth method; bspline, linear')
     parser.add_argument('--fish_trajectory_smooth_factor', default=80., type=float, help='larger, smoother')
     parser.add_argument('--angle', default='cog', type=str, help='ping direction, [cog, heading, course]')
@@ -88,8 +112,6 @@ if __name__ == '__main__':
     for bs_path in sorted(glob.glob(os.path.join(args.input_dir, 'downsample', f'*{args.frequency}-bs.npy'))):
         _, bs_name = os.path.split(bs_path)
         bs_names.append(bs_name)
-
-    #bs_names = ['line68_20-bs.npy']
 
     for n, bs_name in enumerate(bs_names):
         tile_start = time.time()
@@ -126,7 +148,7 @@ if __name__ == '__main__':
         para = vars(args)
         qc = QualityControl(bs_name,para,bs,geo_coords,angle,recorded_speed)
 
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, shape: {bs.shape}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, shape: {bs.shape}')
         
         # preprocessing
         proj_coords, coords_tck, coords_u = \
@@ -179,7 +201,7 @@ if __name__ == '__main__':
             coord = smoothed_coords
 
         end = time.time()
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, bottom_detection, cost: {end-start:.3f}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, bottom_detection, cost: {end-start:.3f}')
 
         qc.get_bottom_detection_out(coord)
 
@@ -208,7 +230,7 @@ if __name__ == '__main__':
         bs_geo_corrected_vis = linearStretch(bs_geo_corrected, 1, 255, 0.02)
         
         end = time.time()
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, slant_correction, cost: {end-start:.3f}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, slant_correction, cost: {end-start:.3f}')
         qc.get_slant_corrected_out(bs_geo_corrected)
 
         cv2.imwrite(os.path.join(args.out_dir, save_files['slant_correction'],f'{bs_index}-geocorrection.png'), bs_geo_corrected_vis)
@@ -225,7 +247,7 @@ if __name__ == '__main__':
             bs_gray_enhancement, bs_gray_enhancement_vis, no_object_pings = coarse2fine(bs_geo_corrected, min_port_width, min_starboard_width, args.prob_thred,args.ratio)
         
         end = time.time()
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, gray_enhancement, cost: {end-start:.3f}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, gray_enhancement, cost: {end-start:.3f}')
 
         qc.get_gray_enhanced_out(bs_gray_enhancement)
         #qc.image_histogram()
@@ -234,6 +256,7 @@ if __name__ == '__main__':
         #cv2.imwrite(os.path.join(args.out_dir, save_files['gray_enhancement'],f'{bs_index}-noobjecpings.png'), no_object_pings)
 
         # speed correction
+        print('speed correction ...')
         start = time.time()
         if args.speed_correction_method == 'blockwise':
             speed_corrected_bs_vis = blockwise_speed_correction(bs_gray_enhancement_vis, geo_coords, args.geocoding_img_res, args.geo_EPSG, args.proj_EPSG) #speed correction
@@ -241,7 +264,7 @@ if __name__ == '__main__':
             speed_corrected_bs_vis = overall_speed_correction(bs_gray_enhancement_vis, geo_coords, args.geocoding_img_res, args.geo_EPSG, args.proj_EPSG) #speed correction
         
         end = time.time()
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, speed_correction, cost: {end-start:.3f}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, speed_correction, cost: {end-start:.3f}')
 
         qc.get_speed_corrected_out(speed_corrected_bs_vis)
         cv2.imwrite(os.path.join(args.out_dir, save_files['speed_correction'],f'{bs_index}-speed_correction.png'), speed_corrected_bs_vis)
@@ -257,7 +280,7 @@ if __name__ == '__main__':
                       args.fish_trajectory_smooth_type, args.angle, angle, angle_tck, angle_u)
         
         end = time.time()
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, geocoding, cost: {end-start:.3f}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, geocoding, cost: {end-start:.3f}')
 
         qc.get_geocoding_out(geocoding_img, proj_interping_coords, angle_interping)
 
@@ -288,4 +311,4 @@ if __name__ == '__main__':
         gen_pdf(os.path.join(args.out_dir, f'{bs_index}-quality_control.pdf'),qc_report)
 
         tile_end = time.time()
-        logging.info(f'{n}th image/{len(bs_names)}, {bs_name}, whole_tile, cost: {tile_end-tile_start:.3f}')
+        logging.info(f'{n+1}th image/total {len(bs_names)} images, {bs_name}, whole_tile, cost: {tile_end-tile_start:.3f}')
