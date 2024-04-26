@@ -1,0 +1,46 @@
+2024-04-26 20:02:06 line108: input_dir: ./outputs/npy/
+2024-04-26 20:02:06 line108: out_dir: ./outputs/tile
+2024-04-26 20:02:06 line108: frequency: 20
+2024-04-26 20:02:06 line108: slant_range: 80.0
+2024-04-26 20:02:06 line108: planed_speed: 4.0
+2024-04-26 20:02:06 line108: recorded_speed: 1
+2024-04-26 20:02:06 line108: temperature: 26.0
+2024-04-26 20:02:06 line108: salinity: 28.0
+2024-04-26 20:02:06 line108: depth: 5.0
+2024-04-26 20:02:06 line108: pH: 8.0
+2024-04-26 20:02:06 line108: lambd: 20.0
+2024-04-26 20:02:06 line108: gradient_thred_factor: 0.1
+2024-04-26 20:02:06 line108: win_h: 10
+2024-04-26 20:02:06 line108: use_ab_line_correction: 0
+2024-04-26 20:02:06 line108: peak_factor: 0.7
+2024-04-26 20:02:06 line108: valley_std: 5
+2024-04-26 20:02:06 line108: bottom_offset: [2, 5]
+2024-04-26 20:02:06 line108: gray_enhance_method: coarse2fine
+2024-04-26 20:02:06 line108: gaussian_kernel: 50
+2024-04-26 20:02:06 line108: gain: 10.0
+2024-04-26 20:02:06 line108: alpha: 0.05
+2024-04-26 20:02:06 line108: ratio: 0.02
+2024-04-26 20:02:06 line108: prob_thred: 0.3
+2024-04-26 20:02:06 line108: speed_correction_method: blockwise
+2024-04-26 20:02:06 line108: geo_EPSG: 4490
+2024-04-26 20:02:06 line108: proj_EPSG: 4499
+2024-04-26 20:02:06 line108: geocoding_img_res: 0.1
+2024-04-26 20:02:06 line108: is_ns: 1
+2024-04-26 20:02:06 line108: fish_trajectory_smooth_type: bspline
+2024-04-26 20:02:06 line108: fish_trajectory_smooth_factor: 80.0
+2024-04-26 20:02:06 line108: angle: cog
+2024-04-26 20:02:06 line108: angle_smooth_factor: 10.0
+2024-04-26 20:02:06 line151: 1th image/total 2 images, jincheng1_short_20-bs.npy, shape: (717, 1736)
+2024-04-26 20:02:10 line204: 1th image/total 2 images, jincheng1_short_20-bs.npy, bottom_detection, cost: 3.641
+2024-04-26 20:02:10 line233: 1th image/total 2 images, jincheng1_short_20-bs.npy, slant_correction, cost: 0.140
+2024-04-26 20:02:11 line250: 1th image/total 2 images, jincheng1_short_20-bs.npy, gray_enhancement, cost: 0.321
+2024-04-26 20:02:11 line267: 1th image/total 2 images, jincheng1_short_20-bs.npy, speed_correction, cost: 0.272
+2024-04-26 20:02:27 line283: 1th image/total 2 images, jincheng1_short_20-bs.npy, geocoding, cost: 15.215
+2024-04-26 20:02:30 line314: 1th image/total 2 images, jincheng1_short_20-bs.npy, whole_tile, cost: 23.724
+2024-04-26 20:02:30 line151: 2th image/total 2 images, jincheng2_2_20-bs.npy, shape: (952, 1736)
+2024-04-26 20:02:35 line204: 2th image/total 2 images, jincheng2_2_20-bs.npy, bottom_detection, cost: 4.999
+2024-04-26 20:02:36 line233: 2th image/total 2 images, jincheng2_2_20-bs.npy, slant_correction, cost: 0.186
+2024-04-26 20:02:36 line250: 2th image/total 2 images, jincheng2_2_20-bs.npy, gray_enhancement, cost: 0.419
+2024-04-26 20:02:37 line267: 2th image/total 2 images, jincheng2_2_20-bs.npy, speed_correction, cost: 0.365
+2024-04-26 20:02:55 line283: 2th image/total 2 images, jincheng2_2_20-bs.npy, geocoding, cost: 17.601
+2024-04-26 20:02:58 line314: 2th image/total 2 images, jincheng2_2_20-bs.npy, whole_tile, cost: 27.961
