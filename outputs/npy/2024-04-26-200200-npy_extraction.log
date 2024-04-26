@@ -1,0 +1,13 @@
+2024-04-26 20:02:00 line104: input_dir: ./outputs/mat/
+2024-04-26 20:02:00 line104: out_dir: ./outputs/npy/
+2024-04-26 20:02:00 line104: frequency: 20
+2024-04-26 20:02:00 line104: range: 80.0
+2024-04-26 20:02:00 line104: geo_resolution: 0.1
+2024-04-26 20:02:00 line104: temperature: 26.0
+2024-04-26 20:02:00 line104: salinity: 28.0
+2024-04-26 20:02:00 line104: depth: 5.0
+2024-04-26 20:02:00 line104: pH: 8.0
+2024-04-26 20:02:00 line104: lambd: 20.0
+2024-04-26 20:02:00 line104: ratio: 0.02
+2024-04-26 20:02:01 line81: 1th file/total 2 files, jincheng1_short.mat, shape_raw: (717, 10416), shape_downsample: (717, 1736), remains: 0, error_ping: []
+2024-04-26 20:02:04 line81: 2th file/total 2 files, jincheng2_2.mat, shape_raw: (952, 10416), shape_downsample: (952, 1736), remains: 0, error_ping: []
