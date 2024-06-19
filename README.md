@@ -11,4 +11,4 @@ The main scripts in the pipeline includes:
 * `prep/jsf_reading/jsf2mat.m`: decode jsf file and save it as mat file.
 * `prep/gen_dataset.py`: generate raw waterfall and retreive navigation data from mat file.
 * `tile_construction.py`: correct the geometric and radiometric distortions of waterfall images and generate tile mosaics.
-* `stiching.py`: stitch the tile mosaics using geographical cooridinates.
+* `stitching.py`: stitch the tile mosaics using geographical cooridinates.
