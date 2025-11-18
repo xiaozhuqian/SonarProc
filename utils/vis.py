@@ -29,32 +29,37 @@ def npy2img(bs_tvg):
     return img_clip
 
 def hist_calc(img, ratio):
-    '''refer https://zhaoxuhui.top/blog/2018/06/12/GrayScaleStretch.html'''
-    bins = np.arange(img.max())
-    # 调用Numpy实现灰度统计
-    hist, bins = np.histogram(img, bins)
-    total_pixels = img.shape[0] * img.shape[1]
-    # 计算获得ratio%所对应的位置，
-    # 这里ratio为0.02即为2%线性化，0.05即为5%线性化
-    min_index = int((ratio) * total_pixels)
-    max_index = int((1 - ratio) * total_pixels)
-    min_gray = 0
-    max_gray = 0
-    # 统计最小灰度值(A)
-    sum = 0
-    for i in range(hist.__len__()):
-        sum = sum + hist[i]
-        if sum > min_index:
-            min_gray = i
-            break
-    # 统计最大灰度值(B)
-    sum = 0
-    for i in range(hist.__len__()):
-        sum = sum + hist[i]
-        if sum > max_index:
-            max_gray = i
-            break
-    return min_gray, max_gray
+    """
+    返回灰度直方图累积概率达到 ratio 和 (1-ratio) 的灰度阈值
+    优化版：使用 numpy.cumsum，速度远快于循环。
+    ratio 可等于 0。
+    """
+    img = img.astype(np.int32)
+
+    # ratio = 0 时直接返回 min/max 灰度
+    if ratio == 0:
+        return int(img.min()), int(img.max())
+
+    # 计算直方图（自动覆盖最小到最大灰度）
+    min_val = img.min()
+    max_val = img.max()
+    bins = np.arange(min_val, max_val + 2)  # +2 保证最后一个值被包括
+    hist, _ = np.histogram(img, bins=bins)
+
+    # 计算累积分布 CDF
+    cdf = np.cumsum(hist)
+
+    total = img.size
+    min_index = int(ratio * total)
+    max_index = int((1 - ratio) * total)
+
+    # 找到第一个 CDF > min_index 的灰度
+    min_gray = np.searchsorted(cdf, min_index, side='right') + min_val
+
+    # 找到第一个 CDF > max_index 的灰度
+    max_gray = np.searchsorted(cdf, max_index, side='right') + min_val
+
+    return int(min_gray), int(max_gray)
 
 
 def linearStretch(img, new_min, new_max, ratio):
